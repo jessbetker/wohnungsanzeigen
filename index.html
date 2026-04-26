@@ -2,44 +2,81 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Budget-Ninja 2.0</title>
+    <title>Budget Rechner</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding: 20px; }
-        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 420px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding: 20px; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; position: relative; }
         h1 { color: #2c3e50; text-align: center; margin-bottom: 20px; font-size: 1.8em; }
+        
+        /* Eingabefelder */
         .input-group { margin-bottom: 12px; }
         label { display: block; margin-bottom: 4px; font-weight: bold; color: #34495e; font-size: 0.9em; }
         input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1em; }
         input:focus { border-color: #3498db; outline: none; background: #f9fbff; }
         
+        /* Tacho und Ergebnisse */
         .tacho-container { background: #ecf0f1; height: 20px; border-radius: 10px; margin: 20px 0 10px 0; overflow: hidden; }
-        #tacho-bar { height: 100%; width: 0%; background: #27ae60; transition: width 0.4s ease; }
-        
+        #tacho-bar { height: 100%; width: 0%; background: #27ae60; transition: width 0.4s ease, background 0.4s ease; }
         .results { background: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 5px solid #2c3e50; margin-top: 20px; }
         .result-line { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 1.1em; }
-        .total-left { font-weight: bold; color: #2ecc71; border-top: 1px solid #ddd; pt: 5px; margin-top: 5px; }
+        .total-left { font-weight: bold; color: #2ecc71; border-top: 1px solid #ddd; padding-top: 5px; margin-top: 5px; }
         .total-left.danger { color: #e74c3c; }
 
-        .hint { font-size: 0.75em; color: #7f8c8d; text-align: center; margin-top: 15px; font-style: italic; }
+        /* Aktive Ereignisse Liste */
+        #active-events-container { margin-top: 15px; font-size: 0.9em; }
+        .event-item { 
+            background: #fff0f0; border-left: 3px solid #e74c3c; padding: 8px 12px; margin-bottom: 5px; 
+            border-radius: 6px; display: flex; justify-content: space-between; align-items: center; 
+            animation: slideIn 0.3s ease-out;
+        }
+        .event-item.positive { background: #f0fdf4; border-left-color: #27ae60; }
+        .event-content { display: flex; justify-content: space-between; width: 100%; margin-right: 15px; align-items: center; }
+        
+        /* Das "X" zum Löschen */
+        .btn-remove { 
+            background: transparent; border: none; color: #e74c3c; font-size: 1.2em; 
+            cursor: pointer; padding: 0; transition: transform 0.2s; font-weight: bold;
+        }
+        .btn-remove:hover { transform: scale(1.3); color: #c0392b; }
+
+        /* Button */
+        .btn-draw { width: 100%; background: #e94560; color: white; border: none; padding: 15px; font-size: 1.1em; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 20px; transition: 0.2s; box-shadow: 0 4px 10px rgba(233, 69, 96, 0.3); text-transform: uppercase; letter-spacing: 1px; }
+        .btn-draw:hover { background: #ff4d6d; transform: translateY(-2px); }
+
+        /* Modal / Pop-Up */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(3px); }
+        .modal-content { background: #1a1a2e; color: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 0 30px rgba(233, 69, 96, 0.4); border: 2px solid #e94560; animation: popIn 0.3s ease-out; }
+        .modal-content .icon { font-size: 60px; margin-bottom: 10px; display: block; }
+        .modal-content h2 { color: #e94560; margin-top: 0; }
+        .modal-content p { color: #b8c1ec; line-height: 1.4; }
+        .modal-content .effect { font-weight: bold; padding: 10px; border-radius: 8px; background: rgba(233, 69, 96, 0.1); color: #e94560; border: 1px dashed #e94560; margin: 15px 0; }
+        .modal-content .effect.positive { color: #00d2ff; border-color: #00d2ff; background: rgba(0, 210, 255, 0.1); }
+        .btn-accept { background: #27ae60; color: white; border: none; padding: 12px 25px; font-size: 1em; font-weight: bold; border-radius: 50px; cursor: pointer; transition: 0.2s; width: 100%; }
+        .btn-accept:hover { background: #2ecc71; }
+
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes slideIn { 0% { transform: translateX(-10px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
         hr { border: 0; border-top: 1px solid #eee; margin: 20px 0; }
     </style>
 </head>
 <body>
+
     <div class="card">
         <h1>Budget Rechner</h1>
         
         <div class="input-group">
-            <label>Monatliches Budget (€) (Einkommen/Eltern/BAföG)</label>
-            <input type="number" id="income" placeholder="z.B. 850" oninput="calculate()">
+            <label>Monatliches Budget (€) (Einkommen/BAföG)</label>
+            <input type="number" id="base-income" placeholder="z.B. 850" oninput="calculate()">
         </div>
         
         <hr>
-        <p style="font-size: 0.85em; color: #95a5a6; margin-bottom: 10px;">Fixkosten eingeben:</p>
-        <div class="input-group"><label>🏠 Miete & Nebenkosten (€)</label><input type="number" class="cost" placeholder="0" oninput="calculate()"></div>
-        <div class="input-group"><label>⚡ Strom & Wärme (€)</label><input type="number" class="cost" placeholder="0" oninput="calculate()"></div>
-        <div class="input-group"><label>🌐 Internet & Handy (€)</label><input type="number" class="cost" placeholder="0" oninput="calculate()"></div>
-        <div class="input-group"><label>📺 GEZ & Abos (Netflix etc.) (€)</label><input type="number" class="cost" placeholder="0" oninput="calculate()"></div>
-        <div class="input-group"><label>🛡️ Versicherungen & Bank (€)</label><input type="number" class="cost" placeholder="0" oninput="calculate()"></div>
+        <div class="input-group"><label>🏠 Miete & Nebenkosten (€)</label><input type="number" class="base-cost" placeholder="0" oninput="calculate()"></div>
+        <div class="input-group"><label>⚡ Strom & Wärme (€)</label><input type="number" class="base-cost" placeholder="0" oninput="calculate()"></div>
+        <div class="input-group"><label>🌐 Internet & Handy (€)</label><input type="number" class="base-cost" placeholder="0" oninput="calculate()"></div>
+        <div class="input-group"><label>📺 GEZ & Abos (€)</label><input type="number" class="base-cost" placeholder="0" oninput="calculate()"></div>
+        <div class="input-group"><label>🛡️ Versicherungen (€)</label><input type="number" class="base-cost" placeholder="0" oninput="calculate()"></div>
+
+        <div id="active-events-container"></div>
 
         <div class="tacho-container"><div id="tacho-bar"></div></div>
 
@@ -53,40 +90,128 @@
                 <span id="remaining">0,00 €</span>
             </div>
         </div>
-        
-        <p class="hint">Variable Kosten (Essen, Party, Kleidung) müssen vom "freien Budget" bezahlt werden!</p>
+
+        <button class="btn-draw" onclick="drawEvent()">EREIGNISKARTE ZIEHEN</button>
+    </div>
+
+    <div class="modal-overlay" id="event-modal">
+        <div class="modal-content">
+            <span class="icon" id="modal-icon">✨</span>
+            <h2 id="modal-title">Titel</h2>
+            <p id="modal-text">Beschreibung</p>
+            <div class="effect" id="modal-effect">Effekt</div>
+            <button class="btn-accept" onclick="acceptEvent()">AKZEPTIEREN</button>
+        </div>
     </div>
 
     <script>
-        function calculate() {
-            const income = parseFloat(document.getElementById('income').value) || 0;
-            const costs = document.querySelectorAll('.cost');
-            let totalCosts = 0;
-            costs.forEach(input => totalCosts += parseFloat(input.value) || 0);
+        const cards = [
+            { icon: "🏋️‍♂️", title: "Fitness-Wahn", text: "Nach der dritten Pizza packt dich das Gewissen. Du unterschreibst im Premium-Gym 'Pumper’s Paradise'.", effectText: "Fixkosten: +55 €", costChange: 55, incomeChange: 0 },
+            { icon: "📄", title: "BAföG-Amt sagt Nein", text: "Ein Formular fehlt! Deine Zahlung verzögert sich um einen Monat. Du musst an den Notgroschen.", effectText: "Einkommen: -450 €", costChange: 0, incomeChange: -450 },
+            { icon: "🐌", title: "Die DSL-Drossel", text: "Dein Billig-Internet drosselt nach 50GB. Für Streaming musst du ein Upgrade buchen.", effectText: "Fixkosten: +15 €", costChange: 15, incomeChange: 0 },
+            { icon: "🔥", title: "Strom-Nachzahlung", text: "Du hast die Heizung voll aufgedreht. Dein monatlicher Abschlag wird sofort erhöht.", effectText: "Fixkosten: +25 €", costChange: 25, incomeChange: 0 },
+            { icon: "📬", title: "Beitragsservice", text: "Die GEZ hat dich gefunden. Jede Wohnung zahlt, auch wenn du keinen Fernseher hast!", effectText: "Fixkosten: +18,36 €", costChange: 18.36, incomeChange: 0 },
+            { icon: "🤝", title: "Job-Glück", text: "Dein Chef ist super zufrieden und erhöht deinen Stundenlohn beim Nebenjob.", effectText: "Einkommen: +50 €", costChange: 0, incomeChange: 50 },
+            { icon: "🛡️", title: "Versicherungs-Check", text: "Deine Eltern nehmen dich aus der Familien-Haftpflicht. Du brauchst eine eigene.", effectText: "Fixkosten: +8 €", costChange: 8, incomeChange: 0 }
+        ];
 
-            const remaining = income - totalCosts;
-            const percentage = income > 0 ? Math.min((totalCosts / income) * 100, 100) : 0;
+        let activeEvents = [];
+        let currentDrawnCard = null;
+
+        function calculate() {
+            let baseIncome = parseFloat(document.getElementById('base-income').value) || 0;
+            let baseCosts = 0;
+            document.querySelectorAll('.base-cost').forEach(input => baseCosts += parseFloat(input.value) || 0);
+
+            let eventIncomeModifier = 0;
+            let eventCostModifier = 0;
             
-            // Tacho Update
+            activeEvents.forEach(event => {
+                eventIncomeModifier += event.incomeChange;
+                eventCostModifier += event.costChange;
+            });
+
+            const totalIncome = Math.max(0, baseIncome + eventIncomeModifier);
+            const totalCosts = baseCosts + eventCostModifier;
+            const remaining = totalIncome - totalCosts;
+            
+            const percentage = totalIncome > 0 ? Math.min((totalCosts / totalIncome) * 100, 100) : (totalCosts > 0 ? 100 : 0);
             const bar = document.getElementById('tacho-bar');
             bar.style.width = percentage + '%';
             
-            // Farbe des Tachos & Textes
             const balanceElement = document.getElementById('remaining');
             if (percentage > 75 || remaining < 100) {
-                bar.style.background = '#e74c3c'; // Alarm: Rot
+                bar.style.background = '#e74c3c';
                 balanceElement.parentElement.classList.add('danger');
             } else if (percentage > 50) {
-                bar.style.background = '#f1c40f'; // Achtung: Gelb
+                bar.style.background = '#f1c40f';
                 balanceElement.parentElement.classList.remove('danger');
             } else {
-                bar.style.background = '#27ae60'; // Okay: Grün
+                bar.style.background = '#27ae60';
                 balanceElement.parentElement.classList.remove('danger');
             }
             
-            // Text Update
             document.getElementById('percent').innerText = percentage.toFixed(1) + '%';
             document.getElementById('remaining').innerText = remaining.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
+
+            renderActiveEvents();
+        }
+
+        function drawEvent() {
+            currentDrawnCard = cards[Math.floor(Math.random() * cards.length)];
+            
+            document.getElementById('modal-icon').innerText = currentDrawnCard.icon;
+            document.getElementById('modal-title').innerText = currentDrawnCard.title;
+            document.getElementById('modal-text').innerText = currentDrawnCard.text;
+            
+            const effectEl = document.getElementById('modal-effect');
+            effectEl.innerText = currentDrawnCard.effectText;
+            
+            if (currentDrawnCard.incomeChange > 0 || currentDrawnCard.costChange < 0) {
+                effectEl.classList.add('positive');
+            } else {
+                effectEl.classList.remove('positive');
+            }
+
+            document.getElementById('event-modal').style.display = 'flex';
+        }
+
+        function acceptEvent() {
+            if (currentDrawnCard) {
+                activeEvents.push(currentDrawnCard);
+                currentDrawnCard = null;
+            }
+            document.getElementById('event-modal').style.display = 'none';
+            calculate(); 
+        }
+
+        // NEU: Funktion zum Entfernen eines Ereignisses
+        function removeEvent(index) {
+            activeEvents.splice(index, 1);
+            calculate(); // Rechnet neu und rendert die Liste automatisch neu
+        }
+
+        // ANGEPASST: Rendern mit Löschen-Button
+        function renderActiveEvents() {
+            const container = document.getElementById('active-events-container');
+            container.innerHTML = ''; 
+
+            if (activeEvents.length > 0) {
+                activeEvents.forEach((event, index) => {
+                    const isPositive = event.incomeChange > 0 || event.costChange < 0;
+                    const div = document.createElement('div');
+                    div.className = `event-item ${isPositive ? 'positive' : ''}`;
+                    
+                    div.innerHTML = `
+                        <div class="event-content">
+                            <span>${event.icon} <b>${event.title}</b></span>
+                            <span>${event.effectText}</span>
+                        </div>
+                        <button class="btn-remove" onclick="removeEvent(${index})" title="Ereignis entfernen">✖</button>
+                    `;
+                    container.appendChild(div);
+                });
+            }
         }
     </script>
 </body>
