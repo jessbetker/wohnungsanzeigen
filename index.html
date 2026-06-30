@@ -2,14 +2,17 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Wohnungsanzeigen</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wohnungs-Detektiv: Nürnberg Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Martel+Sans:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --bg-color: #DAF7F0; 
             --header-color: #D2B7D8;
             --accent-sage: #7BB39E;
             --btn-next: #75E192;
+            --dark-text: #2D3436;
         }
 
         body { 
@@ -20,6 +23,7 @@
             flex-direction: column;
             align-items: center;
             padding: 20px; 
+            padding-bottom: 90px; /* Platzhalter unten für den schwebenden Git-Button */
             margin: 0; 
         }
         
@@ -35,6 +39,7 @@
             border-radius: 30px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             width: 100%;
+            box-sizing: border-box;
         }
 
         .counter-text { font-weight: 800; color: var(--accent-sage); font-size: 0.9em; }
@@ -123,6 +128,43 @@
         
         button:active { transform: translateY(4px); box-shadow: none; }
         button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* Styling für den schwebenden Git-Navigations-Button unten rechts */
+        .git-nav-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            color: var(--dark-text);
+            border: 2px solid var(--header-color);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: 800;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+        }
+
+        .git-nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            background: var(--header-color);
+            color: white;
+        }
+
+        @media (max-width: 600px) {
+            .git-nav-btn {
+                bottom: 15px;
+                right: 15px;
+                padding: 10px 18px;
+                font-size: 0.85em;
+            }
+        }
     </style>
 </head>
 <body>
@@ -170,6 +212,11 @@
         </div>
     </div>
 </div>
+
+<!-- Passe hier ggf. den Dateinamen an, wenn deine zweite HTML-Datei anders heißt -->
+<a href="Rechner.html" class="git-nav-btn" id="git-target-link">
+    Zum Budget-Rechner ➔
+</a>
 
 <script>
     const ads = [
