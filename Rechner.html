@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lebenszeit-Rechner Pro mit Steuer-Automatik</title>
+    <style>
+        :root {
+            --color-purple: #D2B7DB;
+            --color-light-mint: #DAF7F0;
+            --color-dark-mint: #7BB39E;
+            --color-bright-green: #75E192;
+            --color-seafoam: #94EEC4;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--color-light-mint);
+            color: #333;
+            margin: 0;
+            padding: 20px 20px 90px 20px; /* Platzhalter unten für den schwebenden Git-Button */
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background-color: white;
+            max-width: 850px;
+            width: 100%;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            overflow: hidden;
+            border: 2px solid var(--color-purple);
+        }
+
+        header {
+            background-color: var(--color-purple);
+            padding: 25px;
+            text-align: center;
+            color: #4A3B52;
+        }
+
+        h1 { margin: 0; font-size: 1.8rem; }
+
+        .config-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 25px;
+            background-color: #fff;
+            border-bottom: 2px solid var(--color-light-mint);
+        }
+
+        .input-box {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--color-dark-mint);
+        }
+
+        input {
+            padding: 12px;
+            border: 2px solid var(--color-seafoam);
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--color-dark-mint);
+        }
+
+        .tax-info {
+            grid-column: span 2;
+            font-size: 0.9rem;
+            color: #555;
+            background: var(--color-light-mint);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: var(--color-dark-mint);
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--color-light-mint);
+        }
+
+        .time-badge {
+            background-color: var(--color-bright-green);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .summary-box {
+            padding: 25px;
+            background-color: var(--color-purple);
+            color: #4A3B52;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+
+        .stat-val {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .leitfrage-box {
+            padding: 30px;
+            text-align: center;
+            background-color: #fff;
+        }
+
+        .leitfrage {
+            font-size: 1.3rem;
+            font-style: italic;
+            color: var(--color-dark-mint);
+            position: relative;
+            display: inline-block;
+        }
+
+        .tax-loss-row {
+            background-color: #fff3f3;
+            color: #c0392b;
+            font-weight: 500;
+        }
+
+        .git-nav-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            color: #333;
+            border: 2px solid var(--color-purple);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: 800;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+        }
+
+        .git-nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            background: var(--color-purple);
+            color: white;
+        }
+
+        @media (max-width: 600px) {
+            .git-nav-btn {
+                bottom: 15px;
+                right: 15px;
+                padding: 10px 18px;
+                font-size: 0.85em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Arbeitszeit-Rechner: Was bleibt vom Leben?</h1>
+    </header>
+
+    <div class="config-section">
+        <div class="input-box">
+            <label for="brutto">Stundenlohn (Brutto €):</label>
+            <input type="number" id="brutto" value="19.30" step="0.10" oninput="handleBruttoInput()">
+        </div>
+        <div class="input-box">
+            <label for="netto">Stundenlohn (Netto €):</label>
+            <input type="number" id="netto" value="14.00" step="0.10" oninput="handleNettoInput()">
+        </div>
+        <div class="tax-info">
+            <strong>Steuerklasse 1 Automatik aktiv.</strong><br>
+            Gib einen beliebigen Brutto- oder Nettowert ein. Der andere Wert wird unter Berücksichtigung von Steuern und Sozialabgaben näherungsweise berechnet (Basis: Vollzeitbeschäftigung).
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Kostenpunkt</th>
+                <th>Betrag (€)</th>
+                <th>Deine Lebenszeit</th>
+            </tr>
+        </thead>
+        <tbody id="table-body">
+            </tbody>
+    </table>
+
+    <div class="summary-box">
+        <div>
+            <span class="stat-label">Gesamtkosten</span>
+            <span id="total-money" class="stat-val">0 €</span>
+        </div>
+        <div>
+            <span class="stat-label">Arbeitsstunden (Netto)</span>
+            <span id="total-hours" class="stat-val">0 Std.</span>
+        </div>
+        <div>
+            <span class="stat-label">Arbeitswochen (40h)</span>
+            <span id="total-weeks" class="stat-val">0</span>
+        </div>
+    </div>
+
+    <div class="leitfrage-box">
+        <div class="leitfrage">
+            „Wie viel deiner Lebenszeit ist schon ‚verplant‘, bevor du überhaupt Spaß hast?“
+        </div>
+    </div>
+</div>
+
+<script>
+    const expenses = [
+        { name: "🏠 Miete & Nebenkosten", value: 500 },
+        { name: "🛒 Lebensmittel & Drogerie", value: 250 },
+        { name: "📱 Handy, Internet & GEZ", value: 70 },
+        { name: "🚗 Mobilität (Auto/ÖPNV)", value: 100 },
+        { name: "🎬 Abos (Netflix, Gym, Spotify)", value: 40 },
+        { name: "🎉 Freizeit & Hobbys", value: 100 },
+        { name: "💰 Sparen / Notgroschen", value: 50 }
+    ];
+
+    // Konstanten für eine vereinfachte, aber realitätsnahe Steuerberechnung (Steuerklasse 1)
+    const ARBEITSSTUNDEN_MONAT = 160; 
+    const SOZIALABGABEN_SATZ = 0.20; // Ca. 20% Renten-, Kranken-, Pflege-, Arbeitslosenversicherung
+    const GRUNDFREIBETRAG_MONAT = 980; // Steuerfreier monatlicher Betrag (vereinfacht)
+
+    // Berechnet Netto aus Brutto
+    function bruttoToNetto(bruttoWage) {
+        if (bruttoWage <= 0) return 0;
+        
+        const bruttoMonat = bruttoWage * ARBEITSSTUNDEN_MONAT;
+        
+        // 1. Sozialabgaben abziehen (Arbeitnehmeranteil ca. 20%)
+        const sozialAbgaben = bruttoMonat * SOZIALABGABEN_SATZ;
+        
+        // 2. Lohnsteuer berechnen (vereinfachte progressive Steuerkurve für Steuerklasse 1)
+        let lohnsteuer = 0;
+        const zuVersteuerndesEinkommen = bruttoMonat - GRUNDFREIBETRAG_MONAT;
+        
+        if (zuVersteuerndesEinkommen > 0) {
+            // Progressiver Steuersatz simuliert: Eingangssteuersatz bis Spitzensteuersatz
+            if (zuVersteuerndesEinkommen < 1500) {
+                lohnsteuer = zuVersteuerndesEinkommen * 0.12; 
+            } else if (zuVersteuerndesEinkommen < 3500) {
+                lohnsteuer = (1500 * 0.12) + ((zuVersteuerndesEinkommen - 1500) * 0.24);
+            } else {
+                lohnsteuer = (1500 * 0.12) + (2000 * 0.24) + ((zuVersteuerndesEinkommen - 3500) * 0.38);
+            }
+        }
+        
+        const nettoMonat = bruttoMonat - sozialAbgaben - lohnsteuer;
+        return Math.max(nettoMonat / ARBEITSSTUNDEN_MONAT, bruttoWage * 0.5); // Fallback: Mindestens 50% bleiben übrig
+    }
+
+    // Berechnet Brutto aus Netto (mittels numerischer Annäherung / Bisektion)
+    function nettoToBrutto(targetNetto) {
+        if (targetNetto <= 0) return 0;
+        
+        let low = targetNetto;
+        let high = targetNetto * 2.5;
+        let guess = (low + high) / 2;
+        
+        // Maximal 20 Schritte für eine zentimetergenaue Annäherung
+        for (let i = 0; i < 20; i++) {
+            let currentNetto = bruttoToNetto(guess);
+            if (Math.abs(currentNetto - targetNetto) < 0.01) {
+                break;
+            }
+            if (currentNetto < targetNetto) {
+                low = guess;
+            } else {
+                high = guess;
+            }
+            guess = (low + high) / 2;
+        }
+        return guess;
+    }
+
+    function handleBruttoInput() {
+        const brutto = parseFloat(document.getElementById('brutto').value) || 0;
+        const nettoInput = document.getElementById('netto');
+        
+        const berechnetesNetto = bruttoToNetto(brutto);
+        nettoInput.value = berechnetesNetto.toFixed(2);
+        
+        calculateTable();
+    }
+
+    function handleNettoInput() {
+        const netto = parseFloat(document.getElementById('netto').value) || 0;
+        const bruttoInput = document.getElementById('brutto');
+        
+        const berechnetesBrutto = nettoToBrutto(netto);
+        bruttoInput.value = berechnetesBrutto.toFixed(2);
+        
+        calculateTable();
+    }
+
+    function calculateTable() {
+        const brutto = parseFloat(document.getElementById('brutto').value) || 0;
+        const netto = parseFloat(document.getElementById('netto').value) || 1;
+        const tbody = document.getElementById('table-body');
+        
+        tbody.innerHTML = '';
+        let totalMoney = 0;
+        let totalHours = 0;
+
+        // Zeige die "Abgaben-Zeit" an, falls Brutto größer als Netto ist
+        if (brutto > netto) {
+            const taxGap = brutto - netto;
+            const row = document.createElement('tr');
+            row.className = 'tax-loss-row';
+            row.innerHTML = `
+                <td>💸 Abzüge (Steuern & Sozialabgaben pro Std.)</td>
+                <td>${taxGap.toFixed(2)} €</td>
+                <td><span class="time-badge" style="background: #fab1a0; color: #c0392b;">${((taxGap/brutto)*100).toFixed(0)}% Abzug</span></td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        // Die Fixkosten auflisten
+        expenses.forEach(item => {
+            const hours = item.value / netto;
+            totalMoney += item.value;
+            totalHours += hours;
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${item.name}</td>
+                <td><input type="number" value="${item.value}" class="row-input" style="width:70px; border:1px solid #eee; padding: 4px;" oninput="updateValue(this, '${item.name}')"> €</td>
+                <td><span class="time-badge">${hours.toFixed(1)} Std.</span></td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        document.getElementById('total-money').innerText = totalMoney.toFixed(2) + " €";
+        document.getElementById('total-hours').innerText = totalHours.toFixed(1) + " Std.";
+        document.getElementById('total-weeks').innerText = (totalHours / 40).toFixed(1);
+    }
+
+    function updateValue(el, name) {
+        const item = expenses.find(e => e.name === name);
+        if (item) item.value = parseFloat(el.value) || 0;
+        calculateTable();
+    }
+
+    // Initialstart beim Laden
+    window.onload = function() {
+        handleBruttoInput(); // Startet mit dem voreingestellten Bruttowert
+    };
+</script>
+
+<!-- HIER IST DER NEUE NAVIGATION-BUTTON -->
+<a href="Spiel.html" class="git-nav-btn">
+    ➔ Zum Budget-Spiel
+</a>
+
+</body>
+</html>
